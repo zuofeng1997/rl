@@ -8,17 +8,33 @@ viz = Visdom(env="mean_reward")
 env = gym.make("Taxi-v2")
 state_space = 500
 action_space = 6
-epsilon = 0.1
+epsilon = 0.5
 q = np.zeros((state_space, action_space))
 num_episode = 20000
 n = 8
 
 
 def choose_action(state, eps):
-    if np.random.rand() > eps:
-        return np.argmax(q[state])
+    prob = np.zeros(action_space)
+    for action in np.arange(action_space):
+        if action == np.argmax(q[state]):
+            prob[action] = eps/action_space + 1-eps
+        else:
+            prob[action] = eps/action_space
+    return np.random.choice(np.arange(action_space), p=prob)
+
+
+def get_prob_a(state, action, is_greedy):
+    if is_greedy:
+        if action == np.argmax(q[state]):
+            return 1
+        else:
+            return 0
     else:
-        return np.random.randint(action_space)
+        if action == np.argmax(q[state]):
+            return epsilon/action_space + 1 - epsilon
+        else:
+            return epsilon/action_space
 
 
 def score(n_samples=100):
@@ -69,6 +85,8 @@ for i_episode in range(1, num_episode):
         if tao >= 0:
             for j in range(tao+1, min((tao+n, T))+1):
                 G += rewards[j]
+            for j in range(tao+1, min((tao+n-1, T-1))+1):
+                p *= get_prob_a(states[j], actions[j], True)/get_prob_a(states[j], actions[j], False)
             if tao+n < T:
                 G += q[states[tao+n]][actions[tao+n]]
 

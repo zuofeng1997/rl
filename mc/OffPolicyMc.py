@@ -1,6 +1,7 @@
 from copy import deepcopy
 import numpy as np
 
+
 class FiniteMcModel:
     def __init__(self,state_space,action_space,gamma=0.99,epsilon=0.3):
         self.gamma = gamma
@@ -22,6 +23,7 @@ class FiniteMcModel:
             self.Q = {k:deepcopy(actions) for k in state_space}
         self.count = deepcopy(self.Q)
         self.C = deepcopy(self.Q)
+
     def policy(self,action,state):  #target policy
         if self._act_rep == "list":
             if action == np.argmax(self.Q[state]):
@@ -31,7 +33,8 @@ class FiniteMcModel:
             if action == max(self.Q[state], key=self.Q[state].get):
                 return 1
             return 0
-    def behave(self,action,state):   # behave policy
+
+    def behave(self, action, state):   # behave policy
         return self.epsilon / len(self.action_space) + (1 - self.epsilon) * self.policy(action, state)
 
     def generate_returns(self,ep):

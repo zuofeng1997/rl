@@ -1,6 +1,8 @@
 import gym
 import numpy as np
 import matplotlib.pyplot as plt
+from visdom import Visdom
+viz = Visdom(env="mean_reward")
 env = gym.make("Taxi-v2")
 state_space = 500
 action_space = 6
@@ -11,6 +13,8 @@ q1 = np.zeros((state_space,action_space))
 q2 = np.zeros((state_space,action_space))
 r_normal = []
 r_double = []
+
+
 def choose_action(state,epsilon,flag=True):
     if flag:
         if np.random.rand()>epsilon:
@@ -79,13 +83,14 @@ for i_episode in range(num_episode):
         if done:
             break
         s = s_
-    if i_episode % 200 == 0:
+    if i_episode % 400 == 0:
         mean_reward = score(flag=False)
         r_double.append(mean_reward)
         print("i_episode:", i_episode, "mean_reward:", mean_reward, "epsilon:", epsilon)
 
 plt.plot(r_normal,label="Qlearning")
 plt.legend()
+viz.matplot(plt)
 plt.plot(r_double,label="doubleQlearning")
 plt.legend()
-plt.show()
+viz.matplot(plt)
